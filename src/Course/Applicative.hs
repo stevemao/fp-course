@@ -265,8 +265,7 @@ lift1 f fa = f <$> fa
   f a
   -> f b
   -> f b
-(*>) =
-  error "todo: Course.Applicative#(*>)"
+a *> b = const id <$> a <*> b
 
 -- | Apply, discarding the value of the second argument.
 -- Pronounced, left apply.
@@ -291,8 +290,7 @@ lift1 f fa = f <$> fa
   f b
   -> f a
   -> f b
-(<*) =
-  error "todo: Course.Applicative#(<*)"
+a <* b = const <$> a <*> b
 
 -- | Sequences a list of structures to a structure of list.
 --
