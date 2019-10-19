@@ -112,8 +112,9 @@ instance Monad (State s) where
     (a -> State s b)
     -> State s a
     -> State s b
-  (=<<) =
-    error "todo: Course.State (=<<)#instance (State s)"
+  f =<< a = State b
+    where b s = (eval state s, exec state . exec a $ s)
+                  where state = f . eval a $ s
 
 -- | Find the first element in a `List` that satisfies a given predicate.
 -- It is possible that no element is found, hence an `Optional` result.
