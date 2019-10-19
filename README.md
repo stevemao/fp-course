@@ -1,5 +1,7 @@
 # Functional Programming Course
 
+[![Build Status](https://travis-ci.org/stevemao/fp-course.svg?branch=master)](https://travis-ci.org/stevemao/fp-course)
+
 ![Haskell logo](https://haskell-lang.org/static/img/logo.png?etag=rJR84DMh)
 
 ### Written by Tony Morris & Mark Hibberd for Data61
