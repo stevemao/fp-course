@@ -362,8 +362,10 @@ filtering ::
   (a -> f Bool)
   -> List a
   -> f (List a)
-filtering =
-  error "todo: Course.Applicative#filtering"
+-- TODO: read this again.
+filtering f = foldRight 
+  (\curr acc -> (\isTrue as -> if isTrue then curr :. as else as) <$> f curr <*> acc)
+  . pure $ Nil
 
 -----------------------
 -- SUPPORT LIBRARIES --
