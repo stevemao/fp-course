@@ -136,7 +136,7 @@ findM ::
   -> List a
   -> f (Optional a)
 findM _ Nil = pure Empty
-findM f (a :. as) = ifM (f a) (pure . pure $ a) (findM f as)
+findM f (a :. as) = ifM (f a) (pure . pure $ a) . findM f $ as
 
 ifM :: Monad m => m Bool -> m a -> m a -> m a
 ifM ma t f = ma >>= \a -> if a then t else f
@@ -152,8 +152,12 @@ firstRepeat ::
   Ord a =>
   List a
   -> Optional a
-firstRepeat =
-  error "todo: Course.State#firstRepeat"
+firstRepeat = f Nil
+  where f :: Eq a => List a -> List a -> Optional a
+        f bs (a :. as')
+          | elem a bs = Full a
+          | otherwise = f (a :. bs) as'
+        f _ _ = Empty
 
 -- | Remove all duplicate elements in a `List`.
 -- /Tip:/ Use `filtering` and `State` with a @Data.Set#Set@.
@@ -165,8 +169,8 @@ distinct ::
   Ord a =>
   List a
   -> List a
-distinct =
-  error "todo: Course.State#distinct"
+distinct as = P.foldr (:.) Nil set
+  where set = foldRight S.insert S.empty as
 
 -- | A happy number is a positive integer, where the sum of the square of its digits eventually reaches 1 after repetition.
 -- In contrast, a sad number (not a happy number) is where the sum of the square of its digits never reaches 1
@@ -189,8 +193,17 @@ distinct =
 --
 -- >>> isHappy 44
 -- True
+
+toDigits :: Integer -> List Integer
+toDigits a
+  | a <= 0 = Nil
+  | otherwise = toDigits (a `div` 10) ++ (a `mod` 10 :. Nil)
+
 isHappy ::
   Integer
   -> Bool
-isHappy =
-  error "todo: Course.State#isHappy"
+isHappy i = f (getResult i) Nil
+  where getResult = P.fromIntegral . sum . map ((P.^2) . P.fromIntegral) . toDigits
+        f :: Integer -> List Integer -> Bool
+        f 1 _ = True
+        f a as = if elem a as then False else f (getResult a) $ a :. as
