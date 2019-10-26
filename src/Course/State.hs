@@ -14,6 +14,7 @@ import Course.Functor
 import Course.Applicative
 import Course.Monad
 import qualified Data.Set as S
+import qualified Data.Char as C
 
 -- $setup
 -- >>> import Test.QuickCheck.Function
@@ -149,16 +150,21 @@ ifM ma t f = ma >>= \a -> if a then t else f
 --
 -- prop> \xs -> case firstRepeat xs of Empty -> let xs' = hlist xs in nub xs' == xs'; Full x -> length (filter (== x) xs) > 1
 -- prop> \xs -> case firstRepeat xs of Empty -> True; Full x -> let (l, (rx :. rs)) = span (/= x) xs in let (l2, r2) = span (/= x) rs in let l3 = hlist (l ++ (rx :. Nil) ++ l2) in nub l3 == l3
+isRepeat :: Ord a => a -> State (S.Set a) Bool
+isRepeat a = State $ \s -> (S.member a s, S.insert a s)
+
 firstRepeat ::
   Ord a =>
   List a
   -> Optional a
-firstRepeat = f Nil
-  where f :: Eq a => List a -> List a -> Optional a
-        f bs (a :. as')
-          | elem a bs = Full a
-          | otherwise = f (a :. bs) as'
-        f _ _ = Empty
+firstRepeat as = eval (findM isRepeat as) S.empty
+
+-- firstRepeat = f Nil
+--   where f :: Eq a => List a -> List a -> Optional a
+--         f bs (a :. as')
+--           | elem a bs = Full a
+--           | otherwise = f (a :. bs) as'
+--         f _ _ = Empty
 
 -- | Remove all duplicate elements in a `List`.
 -- /Tip:/ Use `filtering` and `State` with a @Data.Set#Set@.
@@ -170,8 +176,10 @@ distinct ::
   Ord a =>
   List a
   -> List a
-distinct as = P.foldr (:.) Nil set
-  where set = foldRight S.insert S.empty as
+distinct as = eval (filtering isRepeat as) S.empty
+
+-- distinct as = P.foldr (:.) Nil set
+--   where set = foldRight S.insert S.empty as
 
 -- | A happy number is a positive integer, where the sum of the square of its digits eventually reaches 1 after repetition.
 -- In contrast, a sad number (not a happy number) is where the sum of the square of its digits never reaches 1
@@ -194,17 +202,22 @@ distinct as = P.foldr (:.) Nil set
 --
 -- >>> isHappy 44
 -- True
-
-toDigits :: Integer -> List Integer
-toDigits a
-  | a <= 0 = Nil
-  | otherwise = toDigits (a `div` 10) ++ (a `mod` 10 :. Nil)
-
 isHappy ::
   Integer
   -> Bool
-isHappy i = f (getResult i) Nil
-  where getResult = P.fromIntegral . sum . map ((P.^2) . P.fromIntegral) . toDigits
-        f :: Integer -> List Integer -> Bool
-        f 1 _ = True
-        f a as = if elem a as then False else f (getResult a) $ a :. as
+isHappy = contains 1 . firstRepeat . produce (\a -> getNewNumber a)
+
+square :: Num a => a -> a
+square = join (*)
+
+getNewNumber :: Integer -> Integer
+getNewNumber = P.fromIntegral . sum . map (square . P.fromIntegral) . toDigits
+                where toDigits :: Integer -> List Integer
+                      toDigits a
+                        | a <= 0 = Nil
+                        | otherwise = toDigits (a `div` 10) ++ (a `mod` 10 :. Nil)
+
+-- isHappy i = f (getNewNumber i) Nil
+--   where f :: Integer -> List Integer -> Bool
+--         f 1 _ = True
+--         f a as = if elem a as then False else f (getNewNumber a) $ a :. as
