@@ -112,9 +112,10 @@ instance Monad (State s) where
     (a -> State s b)
     -> State s a
     -> State s b
-  f =<< a = State b
-    where b s = (eval state s, exec state . exec a $ s)
-                  where state = f . eval a $ s
+  f =<< ma = State g
+    where g s = (eval state s', exec state s')
+              where s' = exec ma s
+                    state = f . eval ma $ s
 
 -- | Find the first element in a `List` that satisfies a given predicate.
 -- It is possible that no element is found, hence an `Optional` result.

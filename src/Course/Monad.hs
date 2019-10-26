@@ -48,7 +48,7 @@ instance Monad List where
     -> List a
     -> List b
   f =<< (a :. as) = f a ++ (f =<< as)
-  f =<< Nil = Nil
+  _ =<< Nil = Nil
 
 -- | Binds a function on an Optional.
 --
