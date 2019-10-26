@@ -211,11 +211,13 @@ square :: Num a => a -> a
 square = join (*)
 
 getNewNumber :: Integer -> Integer
-getNewNumber = P.fromIntegral . sum . map (square . P.fromIntegral) . toDigits
-                where toDigits :: Integer -> List Integer
-                      toDigits a
-                        | a <= 0 = Nil
-                        | otherwise = toDigits (a `div` 10) ++ (a `mod` 10 :. Nil)
+getNewNumber i = P.fromIntegral . sum $ square <$> digitToInt <$> show' i
+
+-- getNewNumber = P.fromIntegral . sum . map (square . P.fromIntegral) . toDigits
+--                 where toDigits :: Integer -> List Integer
+--                       toDigits a
+--                         | a <= 0 = Nil
+--                         | otherwise = toDigits (a `div` 10) ++ (a `mod` 10 :. Nil)
 
 -- isHappy i = f (getNewNumber i) Nil
 --   where f :: Integer -> List Integer -> Bool
