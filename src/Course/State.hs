@@ -99,7 +99,10 @@ instance Applicative (State s) where
     State s (a -> b)
     -> State s a
     -> State s b 
-  f <*> a = State (\s -> (eval f s . eval a $ s, exec a . exec f $ s))
+  mf <*> ma = State fun
+    where fun s = (a' . eval ma $ s', exec ma s')
+              where s' = exec mf s
+                    a' = eval mf s
 
 -- | Implement the `Bind` instance for `State s`.
 --
@@ -150,14 +153,13 @@ ifM ma t f = ma >>= \a -> if a then t else f
 --
 -- prop> \xs -> case firstRepeat xs of Empty -> let xs' = hlist xs in nub xs' == xs'; Full x -> length (filter (== x) xs) > 1
 -- prop> \xs -> case firstRepeat xs of Empty -> True; Full x -> let (l, (rx :. rs)) = span (/= x) xs in let (l2, r2) = span (/= x) rs in let l3 = hlist (l ++ (rx :. Nil) ++ l2) in nub l3 == l3
-isRepeat :: Ord a => a -> State (S.Set a) Bool
-isRepeat a = State $ \s -> (S.member a s, S.insert a s)
 
 firstRepeat ::
   Ord a =>
   List a
   -> Optional a
 firstRepeat as = eval (findM isRepeat as) S.empty
+  where isRepeat a = State $ \s -> (S.member a s, S.insert a s)
 
 -- firstRepeat = f Nil
 --   where f :: Eq a => List a -> List a -> Optional a
@@ -176,7 +178,8 @@ distinct ::
   Ord a =>
   List a
   -> List a
-distinct as = eval (filtering isRepeat as) S.empty
+distinct as = eval (filtering addDistinct as) S.empty
+  where addDistinct a = State $ \s -> (not . S.member a $ s, S.insert a s)
 
 -- distinct as = P.foldr (:.) Nil set
 --   where set = foldRight S.insert S.empty as

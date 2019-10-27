@@ -97,8 +97,7 @@ type State' s a =
 state' ::
   (s -> (a, s))
   -> State' s a
-state' =
-  error "todo: Course.StateT#state'"
+state' f = StateT $ ExactlyOne . f
 
 -- | Provide an unwrapper for `State'` values.
 --
@@ -108,8 +107,7 @@ runState' ::
   State' s a
   -> s
   -> (a, s)
-runState' =
-  error "todo: Course.StateT#runState'"
+runState' (StateT f) = runExactlyOne . f
 
 -- | Run the `StateT` seeded with `s` and retrieve the resulting state.
 execT ::
@@ -117,16 +115,14 @@ execT ::
   StateT s f a
   -> s
   -> f s
-execT =
-  error "todo: Course.StateT#execT"
+execT (StateT f) s = snd <$> f s
 
 -- | Run the `State` seeded with `s` and retrieve the resulting state.
 exec' ::
   State' s a
   -> s
   -> s
-exec' =
-  error "todo: Course.StateT#exec'"
+exec' sf = runExactlyOne . execT sf
 
 -- | Run the `StateT` seeded with `s` and retrieve the resulting value.
 evalT ::
@@ -134,16 +130,14 @@ evalT ::
   StateT s f a
   -> s
   -> f a
-evalT =
-  error "todo: Course.StateT#evalT"
+evalT (StateT f) s = fst <$> f s
 
 -- | Run the `State` seeded with `s` and retrieve the resulting value.
 eval' ::
   State' s a
   -> s
   -> a
-eval' =
-  error "todo: Course.StateT#eval'"
+eval' sf = runExactlyOne . evalT sf
 
 -- | A `StateT` where the state also distributes into the produced value.
 --
@@ -152,8 +146,7 @@ eval' =
 getT ::
   Applicative f =>
   StateT s f s
-getT =
-  error "todo: Course.StateT#getT"
+getT = StateT $ pure . join (,)
 
 -- | A `StateT` where the resulting state is seeded with the given value.
 --
@@ -166,8 +159,7 @@ putT ::
   Applicative f =>
   s
   -> StateT s f ()
-putT =
-  error "todo: Course.StateT#putT"
+putT s = StateT . const $ (pure ((), s))
 
 -- | Remove all duplicate elements in a `List`.
 --
@@ -178,8 +170,8 @@ distinct' ::
   (Ord a, Num a) =>
   List a
   -> List a
-distinct' =
-  error "todo: Course.StateT#distinct'"
+distinct' as = eval' (filtering addDistinct as) S.empty
+  where addDistinct a = state' $ \s -> (not . S.member a $ s, S.insert a s)
 
 -- | Remove all duplicate elements in a `List`.
 -- However, if you see a value greater than `100` in the list,
