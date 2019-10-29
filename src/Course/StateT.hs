@@ -306,9 +306,10 @@ distinctG as = runOptionalT . evalT (filtering produceLogs as) $ S.empty
   where produceLogs :: (Integral a, Show a) => a -> StateT (S.Set a) (OptionalT (Logger Chars)) Bool
         produceLogs a = StateT fn
           where fn s
-                  | a > 100 = OptionalT . Logger ((listh "aborting > 100: " ++ show' a) :. Nil) $ Empty
-                  | even a = OptionalT . Logger ((listh "even number: " ++ show' a) :. Nil) . Full $ (not $ S.member a $ s, S.insert a s)
-                  | otherwise = OptionalT . Logger Nil . Full $ (not $ S.member a $ s, S.insert a s)
+                  | a > 100 = OptionalT . log1 ("aborting > 100: " ++ show' a) $ Empty
+                  | even a = OptionalT . log1 ("even number: " ++ show' a) $ full
+                  | otherwise = OptionalT . Logger Nil $ full
+                                                    where full = Full (not . S.member a $ s, S.insert a s)
 
 onFull ::
   Applicative f =>
