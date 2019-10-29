@@ -262,7 +262,7 @@ instance Functor (Logger l) where
 -- >>> Logger (listh [1,2]) (+7) <*> Logger (listh [3,4]) 3
 -- Logger [1,2,3,4] 10
 instance Applicative (Logger l) where
-  pure a = Logger Nil a
+  pure = Logger Nil
   Logger ls1 f <*> Logger ls2 a = Logger (ls1 ++ ls2) . f $ a
 
 -- | Implement the `Monad` instance for `Logger`.
@@ -282,7 +282,7 @@ log1 ::
   l
   -> a
   -> Logger l a
-log1 l = Logger (l :. Nil)
+log1 = Logger . pure
 
 -- | Remove all duplicate integers from a list. Produce a log as you go.
 -- If there is an element above 100, then abort the entire computation and produce no result.
