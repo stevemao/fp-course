@@ -99,8 +99,8 @@ data Coproduct f g a =
 instance (Functor f, Functor g) =>
   Functor (Coproduct f g) where
 -- Implement the (<$>) function for a Functor instance for Coproduct
-  f <$> InR ga = InR (f <$> ga)
-  f <$> InL fa = InL (f <$> fa)
+  f <$> InR ga = InR $ f <$> ga
+  f <$> InL fa = InL $ f <$> fa
 
 instance (Traversable f, Traversable g) =>
   Traversable (Coproduct f g) where
