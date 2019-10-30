@@ -23,7 +23,7 @@ instance (Applicative f, Applicative g) =>
 -- Implement the pure function for an Applicative instance for Compose
   pure = Compose . pure . pure
 -- Implement the (<*>) function for an Applicative instance for Compose
-  Compose f <*> Compose g = (\i -> (\fun -> g <$> fun) <$> i) <$> f
+  Compose f <*> Compose a = Compose $ (<*>) <$> f <*> a
 
 instance (Monad f, Monad g) =>
   Monad (Compose f g) where
@@ -31,11 +31,11 @@ instance (Monad f, Monad g) =>
   (=<<) =
     error "todo: Course.Compose (<<=)#instance (Compose f g)"
 
--- Note that the inner g is Contravariant but the outer f is
--- Functor. We would not be able to write an instance if both were
--- Contravariant; why not?
-instance (Functor f, Contravariant g) =>
-  Contravariant (Compose f g) where
--- Implement the (>$<) function for a Contravariant instance for Compose
-  (>$<) =
-    error "todo: Course.Compose (>$<)#instance (Compose f g)"
+-- -- Note that the inner g is Contravariant but the outer f is
+-- -- Functor. We would not be able to write an instance if both were
+-- -- Contravariant; why not?
+-- instance (Functor f, Contravariant g) =>
+--   Contravariant (Compose f g) where
+-- -- Implement the (>$<) function for a Contravariant instance for Compose
+--   (>$<) =
+--     error "todo: Course.Compose (>$<)#instance (Compose f g)"
