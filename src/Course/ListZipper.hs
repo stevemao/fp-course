@@ -285,8 +285,9 @@ findRight ::
   (a -> Bool)
   -> ListZipper a
   -> MaybeListZipper a
-findRight =
-  error "todo: Course.ListZipper#findRight"
+findRight f (ListZipper l a r) = swap . findLeft f . ListZipper r a $ l
+  where swap IsNotZ = IsNotZ
+        swap (IsZ (ListZipper l' a' r')) = IsZ . ListZipper r' a' $ l'
 
 -- | Move the zipper left, or if there are no elements to the left, go to the far right.
 --
