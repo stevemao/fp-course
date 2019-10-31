@@ -281,13 +281,17 @@ findLeft f (ListZipper l a r) =
 --
 -- >>> findRight (== 1) (zipper [2, 3] 1 [1, 4, 5, 1])
 -- [1,2,3] >1< [4,5,1]
+
+swapMay IsNotZ = IsNotZ
+swapMay (IsZ lz) = IsZ . swap $ lz
+
+swap (ListZipper l' a' r') = ListZipper r' a' $ l'
+
 findRight ::
   (a -> Bool)
   -> ListZipper a
   -> MaybeListZipper a
-findRight f (ListZipper l a r) = swap . findLeft f . ListZipper r a $ l
-  where swap IsNotZ = IsNotZ
-        swap (IsZ (ListZipper l' a' r')) = IsZ . ListZipper r' a' $ l'
+findRight f (ListZipper l a r) = swapMay . findLeft f . ListZipper r a $ l
 
 -- | Move the zipper left, or if there are no elements to the left, go to the far right.
 --
@@ -299,8 +303,13 @@ findRight f (ListZipper l a r) = swap . findLeft f . ListZipper r a $ l
 moveLeftLoop ::
   ListZipper a
   -> ListZipper a
-moveLeftLoop =
-  error "todo: Course.ListZipper#moveLeftLoop"
+moveLeftLoop (ListZipper (l :. ls) a r) = ListZipper ls l (a :. r)
+moveLeftLoop (ListZipper Nil a r) = case breakLast r of
+  (_, Empty) -> ListZipper Nil a Nil
+  (as', Full a') -> ListZipper (as' ++ pure a) a' Nil
+  where breakLast as = case reverse as of
+          (a' :. as') -> (as', Full a')
+          Nil -> (Nil, Empty)
 
 -- | Move the zipper right, or if there are no elements to the right, go to the far left.
 --
@@ -312,8 +321,7 @@ moveLeftLoop =
 moveRightLoop ::
   ListZipper a
   -> ListZipper a
-moveRightLoop =
-  error "todo: Course.ListZipper#moveRightLoop"
+moveRightLoop (ListZipper l a r) = swap . moveLeftLoop . ListZipper r a $ l
 
 -- | Move the zipper one position to the left.
 --
