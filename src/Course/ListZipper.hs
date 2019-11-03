@@ -662,16 +662,16 @@ instance Applicative MaybeListZipper where
 -- >>> id <<= (zipper [2,1] 3 [4,5])
 -- [[1] >2< [3,4,5],[] >1< [2,3,4,5]] >[2,1] >3< [4,5]< [[3,2,1] >4< [5],[4,3,2,1] >5< []]
 instance Extend ListZipper where
-  (<<=) = undefined
--- unfoldr ::
---   (a -> Optional (b, a))
---   -> a
---   -> List b
-  
-  -- f <<= ListZipper l a r = ListZipper l' a' r'
-  --   where l' = unfoldr (\a -> Full (f <$> a, a)) l
-  --         a' = l a r
-  --         r' = unfoldr (\a -> Full (f <$> a, a)) r
+  f <<= lz = ListZipper l' a' r'
+    where r' = unfoldr mr lz
+          mr lz' = case moveRight lz' of
+                IsNotZ -> Empty
+                IsZ lz'' -> Full (f lz'', lz'')
+          l' = unfoldr ml lz
+          ml lz' = case moveLeft lz' of
+                IsNotZ -> Empty
+                IsZ lz'' -> Full (f lz'', lz'')
+          a' = f lz
 
 -- | Implement the `Extend` instance for `MaybeListZipper`.
 -- This instance will use the `Extend` instance for `ListZipper`.
