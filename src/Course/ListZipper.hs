@@ -683,8 +683,17 @@ instance Extend ListZipper where
 -- >>> id <<= (IsZ (zipper [2,1] 3 [4,5]))
 -- [[1] >2< [3,4,5],[] >1< [2,3,4,5]] >[2,1] >3< [4,5]< [[3,2,1] >4< [5],[4,3,2,1] >5< []]
 instance Extend MaybeListZipper where
-  (<<=) =
-    error "todo: Course.ListZipper (<<=)#instance MaybeListZipper"
+  _ <<= IsNotZ = IsNotZ
+  f <<= IsZ lz = IsZ . ListZipper l' a' $ r'
+    where r' = unfoldr mr lz
+          mr lz' = case moveRight lz' of
+                IsNotZ -> Empty
+                IsZ lz'' -> Full (f . IsZ $ lz'', lz'')
+          l' = unfoldr ml lz
+          ml lz' = case moveLeft lz' of
+                IsNotZ -> Empty
+                IsZ lz'' -> Full (f . IsZ $ lz'', lz'')
+          a' = f . IsZ $ lz
 
 -- | Implement the `Comonad` instance for `ListZipper`.
 -- This implementation returns the current focus of the zipper.
