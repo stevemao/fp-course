@@ -119,8 +119,9 @@ constantParser =
 -- True
 character ::
   Parser Char
-character =
-  error "todo: Course.Parser#character"
+character = P p
+  where p Nil = UnexpectedChar ' '
+        p (a :. as) = Result as a
 
 -- | Parsers can map.
 -- Write a Functor instance for a @Parser@.
