@@ -90,7 +90,7 @@ instance (Functor f, Functor g) =>
 instance (Traversable f, Traversable g) =>
   Traversable (Product f g) where
 -- Implement the traverse function for a Traversable instance for Product
-  traverse f p = sequenceA $ f <$> p
+  traverse f (Product fa ga) = Product <$> traverse f fa <*> traverse f ga
 
 -- | The `Coproduct` data type contains one value from either of the two type constructors.
 data Coproduct f g a =
@@ -106,4 +106,5 @@ instance (Functor f, Functor g) =>
 instance (Traversable f, Traversable g) =>
   Traversable (Coproduct f g) where
 -- Implement the traverse function for a Traversable instance for Coproduct
-  traverse f p = sequenceA $ f <$> p
+  traverse f (InL fa) = InL <$> traverse f fa
+  traverse f (InR fa) = InR <$> traverse f fa
