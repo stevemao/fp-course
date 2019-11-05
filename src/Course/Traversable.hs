@@ -75,7 +75,8 @@ sequenceA = traverse id
 instance (Traversable f, Traversable g) =>
   Traversable (Compose f g) where
 -- Implement the traverse function for a Traversable instance for Compose
-  traverse f a = sequenceA $ f <$> a
+  -- TODO: read this again
+  traverse f (Compose a) = Compose <$> traverse (traverse f) a
 
 -- | The `Product` data type contains one value from each of the two type constructors.
 data Product f g a =
