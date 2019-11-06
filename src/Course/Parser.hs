@@ -485,8 +485,7 @@ surnameParser = (\a b c -> a :. b ++ c) <$> upper <*> thisMany 5 lower <*> list 
 -- True
 smokerParser ::
   Parser Bool
-smokerParser =
-  error "todo: Course.Parser#smokerParser"
+smokerParser = const True <$> is 'y' ||| const False <$> is 'n'
 
 -- | Write part of a parser for Person#phoneBody.
 -- This parser will only produce a string of digits, dots or hyphens.
@@ -507,8 +506,7 @@ smokerParser =
 -- Result >a123-456< ""
 phoneBodyParser ::
   Parser Chars
-phoneBodyParser =
-  error "todo: Course.Parser#phoneBodyParser"
+phoneBodyParser = list $ digit ||| is '.' ||| is '-'
 
 -- | Write a parser for Person.phone.
 --
@@ -529,8 +527,7 @@ phoneBodyParser =
 -- True
 phoneParser ::
   Parser Chars
-phoneParser =
-  error "todo: Course.Parser#phoneParser"
+phoneParser = phoneBodyParser <* is '#'
 
 -- | Write a parser for Person.
 --
@@ -583,8 +580,7 @@ phoneParser =
 -- Result >< Person 123 "Fred" "Clarkson" True "123-456.789"
 personParser ::
   Parser Person
-personParser =
-  error "todo: Course.Parser#personParser"
+personParser = Person <$> ageParser <*>~ firstNameParser <*>~ surnameParser <*>~ smokerParser <*>~ phoneBodyParser
 
 -- Make sure all the tests pass!
 
