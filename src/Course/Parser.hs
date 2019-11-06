@@ -120,7 +120,7 @@ constantParser =
 character ::
   Parser Char
 character = P p
-  where p Nil = UnexpectedChar ' '
+  where p Nil = UnexpectedString Nil
         p (a :. as) = Result as a
 
 -- | Parsers can map.
@@ -259,8 +259,7 @@ instance Applicative Parser where
 list ::
   Parser a
   -> Parser (List a)
-list =
-  error "todo: Course.Parser#list"
+list p = list1 p ||| pure Nil
 
 -- | Return a parser that produces at least one value from the given parser then
 -- continues producing a list of values from the given parser (to ultimately produce a non-empty list).
@@ -278,8 +277,7 @@ list =
 list1 ::
   Parser a
   -> Parser (List a)
-list1 =
-  error "todo: Course.Parser#list1"
+list1 p = (:.) <$> p <*> list p
 
 -- | Return a parser that produces a character but fails if
 --
@@ -297,8 +295,9 @@ list1 =
 satisfy ::
   (Char -> Bool)
   -> Parser Char
-satisfy =
-  error "todo: Course.Parser#satisfy"
+satisfy f = P p
+  where p Nil = UnexpectedString Nil
+        p (a :. as) = if f a then Result as a else UnexpectedChar a
 
 -- | Return a parser that produces the given character but fails if
 --
@@ -309,8 +308,7 @@ satisfy =
 -- /Tip:/ Use the @satisfy@ function.
 is ::
   Char -> Parser Char
-is =
-  error "todo: Course.Parser#is"
+is a = satisfy (== a)
 
 -- | Return a parser that produces a character between '0' and '9' but fails if
 --
@@ -321,8 +319,9 @@ is =
 -- /Tip:/ Use the @satisfy@ and @Data.Char#isDigit@ functions.
 digit ::
   Parser Char
-digit =
-  error "todo: Course.Parser#digit"
+digit = P p
+  where p (a :. as) = if isDigit a then Result as a else UnexpectedChar a
+        p Nil = UnexpectedString Nil
 
 --
 -- | Return a parser that produces a space character but fails if
