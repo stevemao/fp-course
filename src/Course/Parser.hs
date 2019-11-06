@@ -580,7 +580,7 @@ phoneParser = phoneBodyParser <* is '#'
 -- Result >< Person 123 "Fred" "Clarkson" True "123-456.789"
 personParser ::
   Parser Person
-personParser = Person <$> ageParser <*>~ firstNameParser <*>~ surnameParser <*>~ smokerParser <*>~ phoneBodyParser
+personParser = Person <$> ageParser <*>~ firstNameParser <*>~ surnameParser <*>~ smokerParser <*>~ phoneParser
 
 -- Make sure all the tests pass!
 
