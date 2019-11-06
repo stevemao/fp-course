@@ -134,12 +134,7 @@ instance Functor Parser where
     -> Parser a
     -> Parser b
   f <$> P p = P p'
-    where p' input = case p input of
-                      Result i a -> Result i (f a)
-                      UnexpectedEof -> UnexpectedEof
-                      ExpectedEof i -> ExpectedEof i
-                      UnexpectedChar c -> UnexpectedChar c
-                      UnexpectedString c -> UnexpectedString c
+    where p' input = f <$> p input 
 
 -- | Return a parser that always succeeds with the given value and consumes no input.
 --
@@ -451,7 +446,7 @@ ageParser =
 -- True
 firstNameParser ::
   Parser Chars
-firstNameParser = const (list lower) =<< upper
+firstNameParser = (\r -> (r :.) <$> list lower) =<< upper
 
 -- | Write a parser for Person.surname.
 --
@@ -472,8 +467,7 @@ firstNameParser = const (list lower) =<< upper
 -- True
 surnameParser ::
   Parser Chars
-surnameParser =
-  error "todo: Course.Parser#surnameParser"
+surnameParser = (\a b c -> a :. b ++ c) <$> upper <*> thisMany 5 lower <*> list lower
 
 -- | Write a parser for Person.smoker.
 --
