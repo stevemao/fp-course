@@ -227,8 +227,13 @@ instance Applicative Parser where
     Parser (a -> b)
     -> Parser a
     -> Parser b
-  (<*>) =
-    error "todo: Course.Parser (<*>)#instance Parser"
+  P f <*> P a = P b
+    where b input = case f input of
+                      Result i f' -> f' <$> a i
+                      UnexpectedEof -> UnexpectedEof
+                      ExpectedEof i -> ExpectedEof i
+                      UnexpectedChar c -> UnexpectedChar c
+                      UnexpectedString c -> UnexpectedString c
 
 -- | Return a parser that continues producing a list of values from the given parser.
 --
