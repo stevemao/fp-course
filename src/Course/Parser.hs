@@ -203,12 +203,7 @@ instance Monad Parser where
     -> Parser a
     -> Parser b
   f =<< P a = P p
-    where p input = case a input of
-                      Result i r -> parse (f r) i
-                      UnexpectedEof -> UnexpectedEof
-                      ExpectedEof i -> ExpectedEof i
-                      UnexpectedChar c -> UnexpectedChar c
-                      UnexpectedString c -> UnexpectedString c
+    where p input = onResult (a input) (\i r -> parse (f r) i)
 
 -- | Write an Applicative functor instance for a @Parser@.
 -- /Tip:/ Use @(=<<)@.
@@ -222,13 +217,14 @@ instance Applicative Parser where
     Parser (a -> b)
     -> Parser a
     -> Parser b
+  -- -- TODO: look at this
+  f <*> a =
+    f >>= \f' ->
+    a >>= \a' ->
+    pure (f' a')
+
   P f <*> P a = P b
-    where b input = case f input of
-                      Result i f' -> f' <$> a i
-                      UnexpectedEof -> UnexpectedEof
-                      ExpectedEof i -> ExpectedEof i
-                      UnexpectedChar c -> UnexpectedChar c
-                      UnexpectedString c -> UnexpectedString c
+    where b input = onResult (f input) (\i f' -> f' <$> a i)
 
 -- | Return a parser that continues producing a list of values from the given parser.
 --
@@ -272,11 +268,7 @@ list p = list1 p ||| pure Nil
 list1 ::
   Parser a
   -> Parser (List a)
--- TODO: why not list1 p = (:.) <$> p <*> list p ?
-list1 k =
-  k >>= \k' ->
-  list k >>= \ks ->
-  pure (k' :. ks)
+list1 p = (:.) <$> p <*> list p
 
 -- | Return a parser that produces a character but fails if
 --
