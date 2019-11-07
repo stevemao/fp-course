@@ -514,7 +514,7 @@ phoneBodyParser = list $ digit ||| is '.' ||| is '-'
 -- True
 phoneParser ::
   Parser Chars
-phoneParser = phoneBodyParser <* is '#'
+phoneParser = (:.) <$> digit <*> phoneBodyParser <* is '#'
 
 -- | Write a parser for Person.
 --
