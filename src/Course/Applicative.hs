@@ -64,7 +64,7 @@ instance Applicative List where
   pure ::
     a
     -> List a
-  pure = flip (:.) Nil
+  pure = (.:) Nil
   (<*>) ::
     List (a -> b)
     -> List a

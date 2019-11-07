@@ -39,6 +39,11 @@ data List t =
 -- Right-associative
 infixr 5 :.
 
+(.:) :: List t -> t -> List t
+(.:) = flip (:.)
+
+infixr 5 .:
+
 instance Show t => Show (List t) where
   show = show . foldRight (:) []
 
@@ -291,8 +296,9 @@ lengthGT4 = (> 4) . length . take 5
 reverse ::
   List a
   -> List a
-reverse = foldLeft (flip (:.)) Nil
--- TODO: Why not?
+-- reverse = foldLeft (.:) Nil
+reverse xs = foldRight (\x k -> \acc -> k (x :. acc)) id xs Nil
+-- TODO: Why not? https://stackoverflow.com/questions/26017352/why-can-you-reverse-list-with-foldl-but-not-with-foldr-in-haskell
 -- foldRight (\curr acc -> acc ++ curr :. Nil) Nil
 
 -- | Produce an infinite `List` that seeds with the given value at its head,
