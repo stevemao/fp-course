@@ -217,7 +217,7 @@ instance Applicative Parser where
     Parser (a -> b)
     -> Parser a
     -> Parser b
-  -- -- TODO: look at this
+  -- TODO: look at this
   f <*> a =
     f >>= \f' ->
     a >>= \a' ->
@@ -385,12 +385,7 @@ sequenceParser ::
   -> Parser (List a)
 sequenceParser Nil = P . flip Result $ Nil
 sequenceParser (P a :. ps) = P p
-  where p input = case a input of
-                    Result i r -> (r :.) <$> parse (sequenceParser ps) i
-                    UnexpectedEof -> UnexpectedEof
-                    ExpectedEof i -> ExpectedEof i
-                    UnexpectedChar c -> UnexpectedChar c
-                    UnexpectedString c -> UnexpectedString c
+  where p input = onResult (a input) (\i r -> (r :.) <$> parse (sequenceParser ps) i)
 
 -- | Return a parser that produces the given number of values off the given parser.
 -- This parser fails if the given parser fails in the attempt to produce the given number of values.
