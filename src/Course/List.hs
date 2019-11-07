@@ -297,7 +297,7 @@ reverse ::
   List a
   -> List a
 reverse = foldLeft (.:) Nil
--- TODO: Why not? https://stackoverflow.com/questions/26017352/why-can-you-reverse-list-with-foldl-but-not-with-foldr-in-haskell
+-- TODO: Why not? https://stackoverflow.com/a/35226966/2075423
 -- foldRight (\curr acc -> acc ++ curr :. Nil) Nil
 
 -- | Produce an infinite `List` that seeds with the given value at its head,
