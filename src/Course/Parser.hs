@@ -217,13 +217,8 @@ instance Applicative Parser where
     Parser (a -> b)
     -> Parser a
     -> Parser b
-  -- TODO: look at this
-  f <*> a =
-    f >>= \f' ->
-    a >>= \a' ->
-    pure (f' a')
-
-  P f <*> P a = P b
+  -- TODO: why this needs lazy?
+  P f <*> ~(P a) = P b
     where b input = onResult (f input) (\i f' -> f' <$> a i)
 
 -- | Return a parser that continues producing a list of values from the given parser.
