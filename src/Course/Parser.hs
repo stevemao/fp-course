@@ -219,7 +219,7 @@ instance Applicative Parser where
     -> Parser b
   -- TODO: why this needs lazy?
   P f <*> ~(P a) = P b
-    where b input = onResult (f input) (\i f' -> f' <$> a i)
+    where b input = onResult (f input) $ \i f' -> f' <$> a i
 
 -- | Return a parser that continues producing a list of values from the given parser.
 --
