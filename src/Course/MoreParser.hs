@@ -402,5 +402,4 @@ betweenSepbyComma ::
   -> Char
   -> Parser a
   -> Parser (List a)
-betweenSepbyComma l r p = betweenCharTok l r p >>= 
-  \r' -> sepby (pure r') (is ',')
+betweenSepbyComma l r p = betweenCharTok l r . sepby p . charTok $ ','
