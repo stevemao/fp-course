@@ -272,8 +272,7 @@ hex = f <$> readHex <$> replicateA 4 (satisfy isHexDigit)
 -- True
 hexu ::
   Parser Char
-hexu =
-  error "todo: Course.MoreParser#hexu"
+hexu = is 'u' *> hex
 
 -- | Write a function that produces a non-empty list of values coming off the given parser (which must succeed at least once),
 -- separated by the second given parser.
@@ -295,8 +294,7 @@ sepby1 ::
   Parser a
   -> Parser s
   -> Parser (List a)
-sepby1 =
-  error "todo: Course.MoreParser#sepby1"
+sepby1 a s = list1 (a <* list s)
 
 -- | Write a function that produces a list of values coming off the given parser,
 -- separated by the second given parser.
