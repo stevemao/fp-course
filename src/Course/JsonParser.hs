@@ -147,7 +147,8 @@ jsonString = betweenCharTok dq dq . list $ unicode ||| alpha ||| space ||| maybe
 jsonNumber ::
   Parser Rational
 jsonNumber =
-  error "todo: Course.JsonParser#jsonNumber"
+  (\k -> case readFloats k of Empty  -> constantParser (UnexpectedString k)
+                              Full (h, _) -> pure h) =<< list1 (digit ||| is '.' ||| is '-' ||| is '+')
 
 -- | Parse a JSON true literal.
 --
@@ -160,8 +161,7 @@ jsonNumber =
 -- True
 jsonTrue ::
   Parser Chars
-jsonTrue =
-  error "todo: Course.JsonParser#jsonTrue"
+jsonTrue = string "true"
 
 -- | Parse a JSON false literal.
 --
@@ -174,8 +174,7 @@ jsonTrue =
 -- True
 jsonFalse ::
   Parser Chars
-jsonFalse =
-  error "todo: Course.JsonParser#jsonFalse"
+jsonFalse = string "false"
 
 -- | Parse a JSON null literal.
 --
@@ -188,8 +187,7 @@ jsonFalse =
 -- True
 jsonNull ::
   Parser Chars
-jsonNull =
-  error "todo: Course.JsonParser#jsonNull"
+jsonNull = string "null"
 
 -- | Parse a JSON array.
 --
@@ -211,8 +209,7 @@ jsonNull =
 -- Result >< [JsonTrue,JsonString "abc",JsonArray [JsonFalse]]
 jsonArray ::
   Parser (List JsonValue)
-jsonArray =
-  error "todo: Course.JsonParser#jsonArray"
+jsonArray = betweenSepbyComma '[' ']' jsonValue
 
 -- | Parse a JSON object.
 --
@@ -231,8 +228,8 @@ jsonArray =
 -- Result >xyz< [("key1",JsonTrue),("key2",JsonFalse)]
 jsonObject ::
   Parser Assoc
-jsonObject =
-  error "todo: Course.JsonParser#jsonObject"
+jsonObject = betweenSepbyComma '{' '}' keyVal <* spaces
+  where keyVal = (,) <$> spaces *> jsonString <* spaces <* charTok ':' <*> jsonValue <* spaces
 
 -- | Parse a JSON value.
 --
@@ -248,8 +245,14 @@ jsonObject =
 -- Result >< [("key1",JsonTrue),("key2",JsonArray [JsonRational (7 % 1),JsonFalse]),("key3",JsonObject [("key4",JsonNull)])]
 jsonValue ::
   Parser JsonValue
-jsonValue =
-   error "todo: Course.JsonParser#jsonValue"
+jsonValue = (toJsonValue JsonTrue jsonTrue
+        ||| toJsonValue JsonFalse jsonFalse
+        ||| toJsonValue JsonNull jsonNull
+        ||| JsonRational <$> jsonNumber
+        ||| JsonArray <$> jsonArray
+        ||| JsonString <$> jsonString
+        ||| JsonObject <$> jsonObject)
+    where toJsonValue j p = const j <$> p
 
 -- | Read a file into a JSON value.
 --
