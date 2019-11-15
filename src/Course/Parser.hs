@@ -99,6 +99,9 @@ unexpectedCharParser ::
   -> Parser a
 unexpectedCharParser c =
   P (\_ -> UnexpectedChar c)
+  
+unexpectedStringParser :: Chars -> Parser a
+unexpectedStringParser cs = P (\_ -> UnexpectedString cs)
 
 --- | Return a parser that always returns the given parse result.
 ---

@@ -109,8 +109,16 @@ toSpecialCharacter c =
 -- True
 jsonString ::
   Parser Chars
-jsonString =
-  error "todo: Course.JsonParser#jsonString"
+jsonString = betweenCharTok dq dq . list $ unicode ||| alpha ||| space ||| maybeSpecial ||| alphaNum
+  where dq = fromSpecialCharacter DoubleQuote
+        unicode = isBackslash *> hexu
+        alphaNum = satisfy isAlphaNum
+        maybeSpecial = isBackslash *> alphaNum >>= f
+          where f a = case toSpecialCharacter a of
+                        Full sc -> pure $ fromSpecialCharacter sc
+                        Empty -> unexpectedStringParser $ backslash :. a :. Nil
+        isBackslash = is backslash
+        backslash = fromSpecialCharacter Backslash
 
 -- | Parse a JSON rational.
 --
