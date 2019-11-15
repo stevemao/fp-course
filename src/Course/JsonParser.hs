@@ -109,11 +109,11 @@ toSpecialCharacter c =
 -- True
 jsonString ::
   Parser Chars
-jsonString = betweenCharTok dq dq . list $ unicode ||| alpha ||| space ||| maybeSpecial ||| alphaNum
+jsonString = betweenCharTok dq dq . list $ unicode ||| alpha ||| space ||| maybeSpecial ||| normalChars
   where dq = fromSpecialCharacter DoubleQuote
         unicode = isBackslash *> hexu
-        alphaNum = satisfy isAlphaNum
-        maybeSpecial = isBackslash *> alphaNum >>= f
+        normalChars = satisfyAny $ isAlphaNum :. (== '-') :. (== '_') :. (== '/') :. (== ':') :. (== '.') :. Nil
+        maybeSpecial = isBackslash *> normalChars >>= f
           where f a = case toSpecialCharacter a of
                         Full sc -> pure $ fromSpecialCharacter sc
                         Empty -> unexpectedStringParser $ backslash :. a :. Nil
@@ -260,5 +260,4 @@ jsonValue = (toJsonValue JsonTrue jsonTrue
 readJsonValue ::
   FilePath
   -> IO (ParseResult JsonValue)
-readJsonValue =
-  error "todo: Course.JsonParser#readJsonValue"
+readJsonValue f = parse jsonValue <$> readFile f
