@@ -14,8 +14,11 @@ fastAnagrams ::
   Chars
   -> FilePath
   -> IO (List Chars)
-fastAnagrams =
-  error "todo: Course.FastAnagrams#fastAnagrams"
+fastAnagrams as p = setToList <$> toSet <$> intersectBy (==) (permutations as) <$> lines <$> readFile p
+  where toSet :: List Chars -> S.Set Chars
+        toSet = foldRight S.insert S.empty
+        setToList :: S.Set Chars -> List Chars
+        setToList = S.fold (:.) Nil
 
 newtype NoCaseString =
   NoCaseString {
