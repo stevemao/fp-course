@@ -6,7 +6,6 @@ module Course.FunctorSpec where
 
 import           Test.Hspec               (Spec, describe, it, shouldBe)
 import           Test.Hspec.QuickCheck    (prop)
-import           Test.QuickCheck.Function (Fun (..))
 
 import           Course.Core
 import           Course.ExactlyOne        (ExactlyOne (..))

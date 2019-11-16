@@ -82,7 +82,7 @@ data Op =
 -- /Tip:/ @putStrLn :: String -> IO ()@ -- Prints a string and then a new line to standard output.
 convertInteractive ::
   IO ()
-convertInteractive = putStr "Enter a string:\n" >-
+convertInteractive = putStr "Enter a string: " >-
   getLine >>= \c -> putStrLn (toUpper <$> c)
 
 -- |
@@ -111,7 +111,9 @@ convertInteractive = putStr "Enter a string:\n" >-
 reverseInteractive ::
   IO ()
 reverseInteractive =
-  error "todo: Course.Interactive#reverseInteractive"
+  putStr "Enter a filename to read: " >-
+    getLine >>= \r -> putStr "Enter a filename to write: " >-
+    getLine >>= \w -> readFile r <&> reverse >>= writeFile w
 
 -- |
 --

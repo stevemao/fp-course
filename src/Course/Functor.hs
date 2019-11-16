@@ -27,6 +27,11 @@ class Functor f where
 
 infixl 4 <$>
 
+(<&>) :: Functor f => f a -> (a -> b) -> f b
+(<&>) = flip (<$>)
+
+infixr 4 <&>
+
 -- $setup
 -- >>> :set -XOverloadedStrings
 -- >>> import Course.Core
