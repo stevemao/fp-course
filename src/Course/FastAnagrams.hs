@@ -14,7 +14,7 @@ fastAnagrams ::
   Chars
   -> FilePath
   -> IO (List Chars)
-fastAnagrams as p = setToList <$> toSet <$> intersectBy (==) (permutations as) <$> lines <$> readFile p
+fastAnagrams as p = setToList <$> toSet <$> intersectBy (\a b -> NoCaseString a == NoCaseString b) (permutations as) <$> lines <$> readFile p
   where toSet :: List Chars -> S.Set Chars
         toSet = foldRight S.insert S.empty
         setToList :: S.Set Chars -> List Chars
