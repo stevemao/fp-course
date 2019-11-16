@@ -138,8 +138,14 @@ reverseInteractive =
 -- /Tip:/ @putStrLn :: String -> IO ()@ -- Prints a string and then a new line to standard output.
 encodeInteractive ::
   IO ()
-encodeInteractive =
-  error "todo: Course.Interactive#encodeInteractive"
+encodeInteractive = putStr "Enter a string: " >-
+                    getLine <&> encode >>= putStrLn
+                        where encode (a :. as)
+                                              | a == ' ' = "%20" ++ encode as
+                                              | a == '\t' = "%09" ++ encode as
+                                              | a == '\"' = "%22" ++ encode as
+                                              | otherwise = a :. encode as
+                              encode Nil = Nil
 
 interactive ::
   IO ()
