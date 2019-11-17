@@ -394,11 +394,31 @@ d32Cs (D3 d1 d2 d3) = hundreds d1 d2 d3
 d32Cs (D2 d1 d2) = hundreds Zero d1 d2
 d32Cs (D1 d1) = hundreds Zero Zero d1
 
+allZeros :: Digit3 -> Bool
+allZeros (D3 Zero Zero Zero) = True
+allZeros (D2 Zero Zero) = True
+allZeros (D1 Zero) = True
+allZeros _ = False
+
+isOne :: Digit3 -> Bool
+isOne (D3 Zero Zero One) = True
+isOne (D2 Zero One) = True
+isOne (D1 One) = True
+isOne _ = False
+
 integerGen :: List Digit3 -> Chars
 integerGen fs = foldRight f "" (reverse (zip (reverse fs) illion)) ++ d fs
-  where f (d3, i) acc = d32Cs d3 ++ " " ++ i ++ (if acc == "" then "" else " ") ++ acc
-        d (D1 One :. _) = "dollar"
-        d _ = "dollars"
+  where f (d3, i) acc = optionalD3 ++ optionalSpace ++ acc
+                      where optionalD3
+                              | allZeros d3 = ""
+                              | otherwise = d32Cs d3 ++ " " ++ i
+                            optionalSpace
+                              | acc == "" = ""
+                              | allZeros d3 = ""
+                              | otherwise = " "
+        d as = case reverse as of
+          (a :. rest) -> if all allZeros rest && isOne a then "dollar" else "dollars"
+          _ -> "dollars"
 
 centGen :: Digit -> Digit -> Chars
 centGen d1 d2 = tenth d1 d2 ++ cents d1 d2
@@ -407,7 +427,6 @@ centGen d1 d2 = tenth d1 d2 ++ cents d1 d2
 
 generator :: ParseResult (FullNumber (List Digit3) (Digit, Digit)) -> Chars
 generator (Result _ (FullNumber fs (d1, d2))) = integerGen fs ++ " and " ++ centGen d1 d2
-  
 generator err = show' err
 
 dollars ::
