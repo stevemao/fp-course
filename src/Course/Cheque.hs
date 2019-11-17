@@ -337,6 +337,7 @@ tenth One Nine = "nineteen"
 tenth a b = showTenthHyphen a b
 
 showTenth :: Digit -> Chars
+showTenth One = "ten"
 showTenth Two = "twenty"
 showTenth Three = "thirty"
 showTenth Four = "forty"
@@ -346,6 +347,14 @@ showTenth Seven = "seventy"
 showTenth Eight = "eighty"
 showTenth Nine = "ninety"
 showTenth _ = ""
+
+showHundred :: Digit -> Chars
+showHundred a = showDigit a ++ " hundred"
+
+hundreds :: Digit -> Digit -> Digit -> Chars
+hundreds Zero b c = tenth b c
+hundreds a Zero Zero = showHundred a
+hundreds a b c = showHundred a ++ " and " ++ tenth b c
 
 showTenthHyphen :: Digit -> Digit -> Chars
 showTenthHyphen a Zero = showTenth a
@@ -380,8 +389,28 @@ digitF = (,) <$> digitParserOrZero <*> digitParserOrZero
 dollarsParser :: Parser (FullNumber (List Digit3) (Digit, Digit))
 dollarsParser = FullNumber <$> digitI <* list (is '.') <*> digitF
 
+d32Cs :: Digit3 -> Chars
+d32Cs (D3 d1 d2 d3) = hundreds d1 d2 d3
+d32Cs (D2 d1 d2) = hundreds Zero d1 d2
+d32Cs (D1 d1) = hundreds Zero Zero d1
+
+integerGen :: List Digit3 -> Chars
+integerGen fs = foldRight f "" (reverse (zip (reverse fs) illion)) ++ d fs
+  where f (d3, i) acc = d32Cs d3 ++ " " ++ i ++ (if acc == "" then "" else " ") ++ acc
+        d (D1 One :. _) = "dollar"
+        d _ = "dollars"
+
+centGen :: Digit -> Digit -> Chars
+centGen d1 d2 = tenth d1 d2 ++ cents d1 d2
+  where cents Zero One = " cent"
+        cents _ _ = " cents"
+
+generator :: ParseResult (FullNumber (List Digit3) (Digit, Digit)) -> Chars
+generator (Result _ (FullNumber fs (d1, d2))) = integerGen fs ++ " and " ++ centGen d1 d2
+  
+generator err = show' err
+
 dollars ::
   Chars
   -> Chars
-dollars =
-  error "todo: Course.Cheque#dollars"
+dollars = generator . parse dollarsParser
