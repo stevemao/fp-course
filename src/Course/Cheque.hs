@@ -25,6 +25,8 @@ import Course.List
 import Course.Functor
 import Course.Applicative
 import Course.Monad
+import Course.Parser
+import Course.MoreParser
 
 -- $setup
 -- >>> :set -XOverloadedStrings
@@ -187,7 +189,7 @@ data Digit =
   | Seven
   | Eight
   | Nine
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show)
 
 showDigit ::
   Digit
@@ -218,7 +220,7 @@ data Digit3 =
   D1 Digit
   | D2 Digit Digit
   | D3 Digit Digit Digit
-  deriving Eq
+  deriving (Eq, Show)
 
 -- Possibly convert a character to a digit.
 fromChar ::
@@ -320,6 +322,64 @@ fromChar _ =
 --
 -- >>> dollars "456789123456789012345678901234567890123456789012345678901234567890.12"
 -- "four hundred and fifty-six vigintillion seven hundred and eighty-nine novemdecillion one hundred and twenty-three octodecillion four hundred and fifty-six septendecillion seven hundred and eighty-nine sexdecillion twelve quindecillion three hundred and forty-five quattuordecillion six hundred and seventy-eight tredecillion nine hundred and one duodecillion two hundred and thirty-four undecillion five hundred and sixty-seven decillion eight hundred and ninety nonillion one hundred and twenty-three octillion four hundred and fifty-six septillion seven hundred and eighty-nine sextillion twelve quintillion three hundred and forty-five quadrillion six hundred and seventy-eight trillion nine hundred and one billion two hundred and thirty-four million five hundred and sixty-seven thousand eight hundred and ninety dollars and twelve cents"
+
+tenth :: Digit -> Digit -> Chars
+tenth Zero a = showDigit a
+tenth One One = "eleven"
+tenth One Two = "twelve"
+tenth One Three = "thirteen"
+tenth One Four = "fourteen"
+tenth One Five = "fifteen"
+tenth One Six = "sixteen"
+tenth One Seven = "seventeen"
+tenth One Eight = "eighteen"
+tenth One Nine = "nineteen"
+tenth a b = showTenthHyphen a b
+
+showTenth :: Digit -> Chars
+showTenth Two = "twenty"
+showTenth Three = "thirty"
+showTenth Four = "forty"
+showTenth Five = "fifty"
+showTenth Six = "sixty"
+showTenth Seven = "seventy"
+showTenth Eight = "eighty"
+showTenth Nine = "ninety"
+showTenth _ = ""
+
+showTenthHyphen :: Digit -> Digit -> Chars
+showTenthHyphen a Zero = showTenth a
+showTenthHyphen a b = showTenth a ++ "-" ++ showDigit b
+
+fromChar' :: Char -> (Char, Optional Digit)
+fromChar' c = (c, fromChar c)
+
+notDigit :: Parser (List Char)
+notDigit = list . satisfyAll $ not . isDigit :. (/= '.') :. Nil
+
+digitParser :: Parser Digit
+digitParser = between notDigit notDigit (f =<< fromChar' <$> digit)
+  where f (_, Full a) = pure a
+        f (c, Empty) = unexpectedCharParser c
+        
+digitParserOrZero :: Parser Digit
+digitParserOrZero = digitParser ||| pure Zero
+
+data FullNumber a b = FullNumber a b
+  deriving Show
+
+digitI :: Parser (List Digit3)
+digitI = foldRight f Nil <$> list digitParser
+  where f curr (D1 a :. rest) = D2 curr a :. rest
+        f curr (D2 a b :. rest) = D3 curr a b :. rest
+        f curr acc = D1 curr :. acc
+
+digitF :: Parser (Digit, Digit)
+digitF = (,) <$> digitParserOrZero <*> digitParserOrZero
+
+dollarsParser :: Parser (FullNumber (List Digit3) (Digit, Digit))
+dollarsParser = FullNumber <$> digitI <* list (is '.') <*> digitF
+
 dollars ::
   Chars
   -> Chars
