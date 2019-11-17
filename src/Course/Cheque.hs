@@ -407,8 +407,10 @@ isOne (D1 One) = True
 isOne _ = False
 
 integerGen :: List Digit3 -> Chars
-integerGen fs = foldRight f "" (reverse (zip (reverse fs) illion)) ++ d fs
-  where f (d3, i) acc = optionalD3 ++ optionalSpace ++ acc
+integerGen fs = n' ++ d fs
+  where n' = if n == "" then showDigit Zero ++ " " else n
+        n = foldRight f "" . reverse . zip (reverse fs) $ illion
+        f (d3, i) acc = optionalD3 ++ optionalSpace ++ acc
                       where optionalD3
                               | allZeros d3 = ""
                               | otherwise = d32Cs d3 ++ " " ++ i
